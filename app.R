@@ -3,8 +3,7 @@
 # Netball data Shiny app
 #
 # NEXT STEPS:
-# Insert plots into Shiny app 
-# Add reactivity
+# Improve appearance and layout of app
 #
 # ISSUES:
 #
@@ -44,32 +43,28 @@ ui <- fluidPage(
     # Application title
     titlePanel("ANZ Premiership Data"),
     
-    #sliderInput("bins",
-    #            "Number of bins:",
-    #            min = 1,
-    #            max = 50,
-    #            value = 30),
-    
     checkboxGroupInput("teams", "Teams to plot", team_summary$Team),
 
     plotOutput("barplot"),
     
-    plotOutput("lineplot")
+    plotOutput("lineplot"),
+
+    sliderInput("years",
+               "Year range:",
+               min = 2017,
+               max = 2020,
+               value = c(2017,2020),
+               step = 1,
+               sep = "",
+               width = '20%'
+    ),
+    
+    plotOutput("scatterplot")
 
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
-    # output$distPlot <- renderPlot({
-    #     # generate bins based on input$bins from ui.R
-    #     x    <- faithful[, 2]
-    #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    # 
-    #     # draw the histogram with the specified number of bins
-    #     hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    # })
-    
     
     output$barplot <- renderPlot({
         selected_data <- team_summary_long %>% filter(Team %in% input$teams)
@@ -80,7 +75,18 @@ server <- function(input, output) {
     output$lineplot <- renderPlot({
         selected_data <- netball_data %>% filter(Team %in% input$teams)
 
-        ggplot(data=selected_data, aes(x = Year, y = Pts, colour = Team)) + geom_line()
+        ggplot(data=selected_data, aes(x = Year, y = Pts, colour = Team)) + 
+            geom_line()
+    })
+    
+    output$scatterplot <- renderPlot({
+        selected_data <- netball_data %>% filter(Year %in% input$years)
+        
+        ggplot(data = selected_data, aes(x = GA, y = GF, colour = Team)) + 
+            geom_point() +
+            labs(title = "Goals for vs. goals against, by team and year",
+                 x = "Goals against",
+                 y = "Goals for")
     })
     
 }
