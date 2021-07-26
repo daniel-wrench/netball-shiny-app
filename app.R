@@ -8,6 +8,13 @@
 #
 
 library(shiny)
+library(tidyverse)
+library(readr)
+
+# Load data
+netball_data <- read_csv("ANZ_Premiership_2017_2020.csv")
+head(netball_data)
+nrow(netball_data)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
