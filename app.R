@@ -31,10 +31,8 @@ team_summary <- netball_data %>%
 team_summary_long <- team_summary %>%
     pivot_longer(cols = c("Wins", "Bonus points"), names_to = "Statistic", values_to = "Total")
 
-ggplot(data=team_summary_long, aes(x = Team, y = Total, fill = Statistic)) + geom_col(position = "dodge")
-
 # Line plot of points per team over time
-ggplot(data=netball_data, aes(x = Year, y = Pts, colour = Team)) + geom_line()
+ggplot(data = netball_data, aes(x = Year, y = Pts, colour = Team)) + geom_line()
 
 # Scatter plot of goals for vs. goals against
 ggplot(data = netball_data, aes(x = GA, y = GF, colour = Team)) + geom_point()
@@ -45,39 +43,46 @@ ui <- fluidPage(
 
     # Application title
     titlePanel("ANZ Premiership Data"),
+    
+    #sliderInput("bins",
+    #            "Number of bins:",
+    #            min = 1,
+    #            max = 50,
+    #            value = 30),
+    
+    checkboxGroupInput("teams", "Teams to plot", team_summary$Team),
 
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
+    plotOutput("barplot"),
+    
+    plotOutput("lineplot")
 
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("scorePlot")
-        )
-    )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    # output$distPlot <- renderPlot({
+    #     # generate bins based on input$bins from ui.R
+    #     x    <- faithful[, 2]
+    #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    # 
+    #     # draw the histogram with the specified number of bins
+    #     hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    # })
+    
+    
+    output$barplot <- renderPlot({
+        selected_data <- team_summary_long %>% filter(Team %in% input$teams)
+        
+        ggplot(data=selected_data, aes(x = Team, y = Total, fill = Statistic)) + geom_col(position = "dodge")
     })
     
-    output$scorePlot <- renderPlot({
-        
+    output$lineplot <- renderPlot({
+        selected_data <- netball_data %>% filter(Team %in% input$teams)
+
+        ggplot(data=selected_data, aes(x = Year, y = Pts, colour = Team)) + geom_line()
     })
+    
 }
 
 # Run the application 
