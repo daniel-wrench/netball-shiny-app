@@ -17,14 +17,16 @@ library(shiny)
 library(tidyverse)
 library(readr)
 
+theme_set(theme_bw(base_size = 20))
+
 # Load data
 netball_data <- read_csv("ANZ_Premiership_2017_2020.csv")
 head(netball_data)
 nrow(netball_data)
 
 # Bar plot of totals per team
-team_summary <- netball_data %>% 
-    group_by(Team) %>%
+team_summary <- netball_data |> 
+    group_by(Team)  |> 
     summarise("Wins" = sum(W), "Bonus points" = sum(BP))
 
 team_summary_long <- team_summary %>%
@@ -34,8 +36,17 @@ team_summary_long <- team_summary %>%
 ggplot(data = netball_data, aes(x = Year, y = Pts, colour = Team)) + geom_line()
 
 # Scatter plot of goals for vs. goals against
-ggplot(data = netball_data, aes(x = GA, y = GF, colour = Team)) + geom_point()
+goals_summary <- netball_data |> 
+    filter(Year %in% c(2017, 2018, 2019)) |> 
+    group_by(Team)  |> 
+    summarise("GF" = sum(GF), "GA" = sum(GA))
 
+ggplot(data = goals_summary, aes(x = GA, y = GF, colour = Team, size = 10)) + 
+    geom_point() + 
+    labs(title = "Total goals for vs. total goals against, for each team, for given time period",
+         x = "Total goals for",
+         y = "Total goals against") +
+    theme_bw()
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -43,7 +54,7 @@ ui <- fluidPage(
     # Application title
     titlePanel("ANZ Premiership Data"),
     
-    checkboxGroupInput("teams", "Teams to plot", team_summary$Team),
+    checkboxGroupInput("teams", "Teams to plot", team_summary$Team, selected = "Central Pulse"),
 
     plotOutput("barplot"),
     
@@ -69,24 +80,32 @@ server <- function(input, output) {
     output$barplot <- renderPlot({
         selected_data <- team_summary_long %>% filter(Team %in% input$teams)
         
-        ggplot(data=selected_data, aes(x = Team, y = Total, fill = Statistic)) + geom_col(position = "dodge")
+        ggplot(data=selected_data, aes(x = Team, y = Total, fill = Statistic)) + 
+            geom_col(position = "dodge") + 
+            scale_fill_manual(values=c("#999999", "#E69F00"))
     })
     
     output$lineplot <- renderPlot({
         selected_data <- netball_data %>% filter(Team %in% input$teams)
 
         ggplot(data=selected_data, aes(x = Year, y = Pts, colour = Team)) + 
-            geom_line()
+            geom_line(size = 2) + labs(title = "Total season points over time, by team")
     })
     
     output$scatterplot <- renderPlot({
-        selected_data <- netball_data %>% filter(Year %in% input$years)
+
+        goals_summary <- netball_data |> 
+            filter(Year %in% input$years) |> 
+            group_by(Team)  |> 
+            summarise("GF" = sum(GF), "GA" = sum(GA))
         
-        ggplot(data = selected_data, aes(x = GA, y = GF, colour = Team)) + 
-            geom_point() +
-            labs(title = "Goals for vs. goals against, by team and year",
-                 x = "Goals against",
-                 y = "Goals for")
+        ggplot(data = goals_summary, aes(x = GA, y = GF, colour = Team)) + 
+            geom_point(size = 4, show.legend = FALSE) + 
+            geom_text(aes(label=Team), vjust = "inward", hjust = "inward", size = 6) + 
+            labs(title = "Total goals for and against, by team",
+                 x = "Total goals for",
+                 y = "Total goals against") + 
+            theme(legend.position = "none")
     })
     
 }
