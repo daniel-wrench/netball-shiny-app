@@ -41,23 +41,30 @@ ui <- fluidPage(
     # Application title
     titlePanel("ANZ Premiership Data"),
     
-    checkboxGroupInput("teams", "Teams to plot", team_summary$Team, selected = "Central Pulse"),
-
-    plotOutput("barplot"),
-    
-    plotOutput("lineplot"),
-
-    sliderInput("years",
-               "Year range:",
-               min = 2017,
-               max = 2020,
-               value = c(2018,2019),
-               step = 1,
-               sep = "",
-               width = '20%'
-    ),
-    
-    plotOutput("scatterplot")
+    sidebarLayout(
+        sidebarPanel(
+            checkboxGroupInput("teams", 
+                               "Teams to plot", 
+                               team_summary$Team, 
+                               selected = "Central Pulse"),
+            
+            sliderInput("years",
+                        "Year range:",
+                        min = 2017,
+                        max = 2020,
+                        value = c(2018,2019),
+                        step = 1,
+                        sep = "",
+                        width = '20%'
+            )
+        ),
+        
+        mainPanel(
+            plotOutput("barplot"),
+            plotOutput("lineplot"),
+            plotOutput("scatterplot")
+        )
+    )
 
 )
 
