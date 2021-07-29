@@ -20,7 +20,7 @@ library(shiny)
 library(tidyverse)
 library(readr)
 
-theme_set(theme_bw(base_size = 20))
+theme_set(theme_bw(base_size = 15))
 
 # Load data
 netball_data <- read_csv("ANZ_Premiership_2017_2020.csv")
@@ -39,33 +39,35 @@ team_summary_long <- team_summary %>%
 ui <- fluidPage(
 
     # Application title
-    titlePanel("ANZ Premiership Data"),
+    titlePanel("ANZ Netball Premiership Data"),
     
-    sidebarLayout(
-        sidebarPanel(
+    fluidRow(
+        column(12, "This app displays statistics from the 2017-2020 seasons for the ANZ Premiership Netball league. Interact with the options to customise the plots."),
+        column(12, h4("View statistics for specific teams")),
+        column(2,
             checkboxGroupInput("teams", 
                                "Teams to plot", 
                                team_summary$Team, 
-                               selected = "Central Pulse"),
-            
+                               selected = "Central Pulse")
+        ),
+        column(5,plotOutput("barplot")),
+        column(5,plotOutput("lineplot"))
+        ),
+    fluidRow(
+        column(12, h4("View statistics for specific years")),
+        column(2,
             sliderInput("years",
                         "Year range:",
                         min = 2017,
                         max = 2020,
                         value = c(2018,2019),
                         step = 1,
-                        sep = "",
-                        width = '20%'
+                        sep = ""
+                        #width = '20%'
+            )),
+        column(10,
+                     plotOutput("scatterplot"))
             )
-        ),
-        
-        mainPanel(
-            plotOutput("barplot"),
-            plotOutput("lineplot"),
-            plotOutput("scatterplot")
-        )
-    )
-
 )
 
 # Define server logic required to draw the plots
@@ -76,14 +78,17 @@ server <- function(input, output) {
         
         ggplot(data=selected_data, aes(x = Team, y = Total, fill = Statistic)) + 
             geom_col(position = "dodge") + 
-            scale_fill_manual(values=c("#999999", "#E69F00"))
+            scale_fill_manual(values=c("#999999", "#E69F00")) + 
+            theme(legend.position = "bottom", axis.text.x = element_text(angle = 18))
     })
     
     output$lineplot <- renderPlot({
         selected_data <- netball_data %>% filter(Team %in% input$teams)
 
         ggplot(data=selected_data, aes(x = Year, y = Pts, colour = Team)) + 
-            geom_line(size = 2) + ylim(c(0,50)) + labs(title = "Total season points over time, by team")
+            geom_line(size = 2) + ylim(c(0,50)) + 
+            labs(title = "Total season points over time, by team") + 
+            theme(legend.position = "bottom")
     })
     
     output$scatterplot <- renderPlot({
