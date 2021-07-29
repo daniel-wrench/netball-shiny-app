@@ -7,8 +7,7 @@
 #
 # ISSUES:
 #
-# Text labels in scatterplot overlap for some ranges, check_overlap argument 
-# makes some disappear -> may need legend as well or instead
+# Layout of line plot legend
 #
 #
 # Find out more about building applications with Shiny here:
