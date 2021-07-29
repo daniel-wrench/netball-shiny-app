@@ -3,11 +3,8 @@
 # Netball data Shiny app
 #
 # NEXT STEPS:
-# Improve layout of app
 #
 # ISSUES:
-#
-# Layout of line plot legend
 #
 #
 # Find out more about building applications with Shiny here:
@@ -19,7 +16,7 @@ library(shiny)
 library(tidyverse)
 library(readr)
 
-theme_set(theme_bw(base_size = 15))
+theme_set(theme_light(base_size = 15))
 
 # Load data
 netball_data <- read_csv("ANZ_Premiership_2017_2020.csv")
@@ -43,18 +40,18 @@ ui <- fluidPage(
     fluidRow(
         column(12, "This app displays statistics from the 2017-2020 seasons for the ANZ Premiership Netball league. Interact with the options to customise the plots."),
         column(12, h4("View statistics for specific teams")),
-        column(2,
+        column(4,
             checkboxGroupInput("teams", 
                                "Teams to plot", 
                                team_summary$Team, 
                                selected = "Central Pulse")
         ),
-        column(5,plotOutput("barplot")),
-        column(5,plotOutput("lineplot"))
+        column(4,plotOutput("barplot")),
+        column(4,plotOutput("lineplot"))
         ),
     fluidRow(
-        column(12, h4("View statistics for specific years")),
-        column(2,
+        column(12, h4("View statistics for a specific range of years")),
+        column(4,
             sliderInput("years",
                         "Year range:",
                         min = 2017,
@@ -64,7 +61,7 @@ ui <- fluidPage(
                         sep = ""
                         #width = '20%'
             )),
-        column(10,
+        column(8,
                      plotOutput("scatterplot"))
             )
 )
@@ -77,8 +74,11 @@ server <- function(input, output) {
         
         ggplot(data=selected_data, aes(x = Team, y = Total, fill = Statistic)) + 
             geom_col(position = "dodge") + 
+            labs(title = "Total bonus points and wins, 2017-2020") +
             scale_fill_manual(values=c("#999999", "#E69F00")) + 
-            theme(legend.position = "bottom", axis.text.x = element_text(angle = 18))
+            theme(legend.position = "bottom", 
+                  axis.text.x = element_text(angle = 18),
+                  legend.title = element_blank())
     })
     
     output$lineplot <- renderPlot({
@@ -86,8 +86,9 @@ server <- function(input, output) {
 
         ggplot(data=selected_data, aes(x = Year, y = Pts, colour = Team)) + 
             geom_line(size = 2) + ylim(c(0,50)) + 
-            labs(title = "Total season points over time, by team") + 
-            theme(legend.position = "bottom")
+            labs(title = "Total points by year") + 
+            theme(legend.position = "bottom", legend.title = element_blank()) + 
+            guides(colour = guide_legend(nrow=3))
     })
     
     output$scatterplot <- renderPlot({
@@ -104,10 +105,10 @@ server <- function(input, output) {
             # show.legend = FALSE)
             geom_text(aes(label=Team), 
                       vjust = "inward", 
-                      hjust = "inward", 
+                      hjust = "inward", theme(lege)
                       size = 6) + 
             #ylim(0, 3300) + xlim(0, 3500) +
-            labs(title = "Total goals for and against, by team",
+            labs(title = "Total goals for and against, for selected period",
                  x = "Total goals for",
                  y = "Total goals against") + 
             theme(legend.position = "none")
