@@ -74,7 +74,7 @@ server <- function(input, output) {
         
         ggplot(data=selected_data, aes(x = Team, y = Total, fill = Statistic)) + 
             geom_col(position = "dodge") + 
-            labs(title = "Total bonus points and wins, 2017-2020") +
+            labs(title = "Total bonus points \nand wins, 2017-2020") +
             scale_fill_manual(values=c("#999999", "#E69F00")) + 
             theme(legend.position = "bottom", 
                   axis.text.x = element_text(angle = 18),
@@ -105,7 +105,7 @@ server <- function(input, output) {
             # show.legend = FALSE)
             geom_text(aes(label=Team), 
                       vjust = "inward", 
-                      hjust = "inward", theme(lege)
+                      hjust = "inward",
                       size = 6) + 
             #ylim(0, 3300) + xlim(0, 3500) +
             labs(title = "Total goals for and against, for selected period",
